@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CredGuard - Secure Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <!-- Dashboard View (Hidden by default) -->
+        <div class="glass-card dashboard-card hidden" id="dashboardView">
+            <div class="header">
+                <h2>Welcome Back! 🚀</h2>
+                <button id="logoutBtn" class="btn-outline">Logout</button>
+            </div>
+            <div class="profile-info">
+                <div class="info-group">
+                    <label>Name</label>
+                    <p id="profileName">Loading...</p>
+                </div>
+                <div class="info-group">
+                    <label>Email</label>
+                    <p id="profileEmail">Loading...</p>
+                </div>
+                <div class="info-group">
+                    <label>User ID</label>
+                    <p id="profileId">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth View -->
+        <div class="glass-card auth-card" id="authView">
+            <div class="toggle-btns">
+                <button class="toggle-btn active" id="showLoginBtn">Login</button>
+                <button class="toggle-btn" id="showRegisterBtn">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <h2>Sign In</h2>
+                <div class="input-group">
+                    <input type="email" id="loginEmail" required placeholder=" ">
+                    <label>Email Address</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="loginPassword" required placeholder=" ">
+                    <label>Password</label>
+                </div>
+                <div class="error-msg" id="loginError"></div>
+                <button type="submit" class="btn-primary" id="loginSubmitBtn">
+                    <span class="btn-text">Log In</span>
+                    <span class="loader hidden"></span>
+                </button>
+            </form>
+
+            <!-- Register Form (Hidden by default) -->
+            <form id="registerForm" class="auth-form hidden">
+                <h2>Create Account</h2>
+                <div class="input-group">
+                    <input type="text" id="regName" required placeholder=" ">
+                    <label>Full Name</label>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="regEmail" required placeholder=" ">
+                    <label>Email Address</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="regPassword" required placeholder=" ">
+                    <label>Password</label>
+                    <small class="password-hint">Min 8 chars, 1 uppercase, 1 number.</small>
+                </div>
+                <div class="error-msg" id="regError"></div>
+                <button type="submit" class="btn-primary" id="regSubmitBtn">
+                    <span class="btn-text">Sign Up</span>
+                    <span class="loader hidden"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
