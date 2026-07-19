@@ -1,56 +1,45 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const mysql = require('mysql2/promise');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const dbPath = path.resolve(__dirname, '../credguard.db');
-
-// Connect to SQLite database (this will create credguard.db if it doesn't exist)
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('❌ SQLite Database connection failed:', err.message);
-    } else {
-        console.log(`✅ SQLite Database connected successfully (stored in ${dbPath})`);
-    }
+// Create a connection pool to MySQL
+const pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'credguard_db',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-// Initialize the database tables
-db.serialize(() => {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-});
+// Test the connection and initialize table if needed
+pool.getConnection()
+    .then(async (connection) => {
+        console.log(`[SUCCESS] MySQL Database connected successfully (${process.env.DB_NAME || 'credguard_db'})`);
+        
+        // Auto-initialize the users table just in case they haven't run database.sql manually
+        try {
+            await connection.execute(`
+                CREATE TABLE IF NOT EXISTS users (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL UNIQUE,
+                    password VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            console.log('[SUCCESS] Users table is ready.');
+        } catch (tableErr) {
+            console.error('[ERROR] Error checking/creating users table:', tableErr.message);
+        }
 
-// Wrapper to mimic the mysql2 promise API so we don't have to change the controllers
-const promisePool = {
-    execute: (sql, params = []) => {
-        return new Promise((resolve, reject) => {
-            // Check if it's a SELECT query
-            if (sql.trim().toUpperCase().startsWith('SELECT')) {
-                db.all(sql, params, (err, rows) => {
-                    if (err) reject(err);
-                    // return [rows, fields] format to match mysql2
-                    else resolve([rows, []]); 
-                });
-            } else {
-                // INSERT, UPDATE, DELETE queries
-                db.run(sql, params, function(err) {
-                    if (err) reject(err);
-                    else {
-                        // return result object similar to mysql2
-                        resolve([{ insertId: this.lastID, affectedRows: this.changes }, []]);
-                    }
-                });
-            }
-        });
-    }
-};
+        connection.release();
+    })
+    .catch(err => {
+        console.error('[ERROR] MySQL Database connection failed:', err.message);
+        console.error('Make sure your local MySQL server (XAMPP/WAMP/etc.) is running and your .env credentials are correct.');
+    });
 
-module.exports = promisePool;
+module.exports = pool;
