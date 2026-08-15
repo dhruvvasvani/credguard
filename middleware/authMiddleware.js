@@ -7,18 +7,21 @@ const db = require('../config/db');
 const protect = async (req, res, next) => {
     let token;
 
-    // Check if token exists in headers and starts with Bearer
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        try {
-            // Get token from header (format: "Bearer <token>")
-            token = req.headers.authorization.split(' ')[1];
+    // Check if token exists in httpOnly cookies or Authorization header
+    if (req.cookies && req.cookies.token) {
+        token = req.cookies.token;
+    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
 
+    if (token) {
+        try {
             // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             // Get user from the token and attach to request object
             const [users] = await db.execute(
-                'SELECT id, name, email, created_at FROM users WHERE id = ?',
+                'SELECT id, name, email, phone, age, country, state, city, pincode, created_at FROM users WHERE id = ?',
                 [decoded.id]
             );
 

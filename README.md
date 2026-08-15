@@ -1,130 +1,151 @@
-# CredGuard API
+# CredGuard
 
-A production-ready, secure RESTful API for User Authentication and Profile Management. Built with Node.js, Express, MySQL, JWT, and bcrypt, **CredGuard** acts as a robust backend foundation for modern web and mobile applications.
-
-## Overview: What is CredGuard?
-
-CredGuard API is a standalone backend service designed to handle the complexities of user authentication securely. Instead of building a login system from scratch for every new project, developers can integrate CredGuard into their frontend applications (such as React, Vue, or Flutter apps) to manage user accounts, hash passwords, and protect sensitive routes.
-
-### Key Benefits
-- **Plug-and-Play Security**: Offloads the heavy lifting of security by handling password hashing (`bcrypt`) and session token generation (`JWT`).
-- **Standardized**: Follows RESTful API standards, making it simple to integrate with any frontend client.
-- **Protection Against Abuse**: Built-in rate limiting prevents brute-force login attempts and API spamming.
-- **Data Integrity**: Enforces strict input validation to ensure only clean, properly formatted data enters your database.
+**CredGuard** is a production-grade, secure RESTful API and Web Application for User Authentication, Profile Management, and Dynamic Location (Country / State / City) Lookup. Built with Node.js, Express, MySQL, JWT, Bcrypt, and a modern glassmorphism frontend user interface.
 
 ---
 
-## Features
+## Key Features
 
-- **User Registration**: Secure password hashing before saving to a MySQL database.
-- **User Login & Authorization**: Issues JSON Web Tokens (JWT) upon successful verification.
-- **Profile Management**: Protected API routes to fetch (`GET`) and update (`PUT`) user details.
-- **Security Layers**: JWT validation, IP-based rate limiting, and secure password handling.
-- **Input Validation**: Request body validation using `express-validator`.
+### Authentication & Profile Management
+- **Flexible Login**: Support for login via Email address or Phone number (with or without country code).
+- **User Registration**: Password complexity enforcement (min 8 chars, 1 uppercase, 1 number, 1 special character) and phone number validation.
+- **Dynamic Location Lookups**: Full integration with `country-state-city` library providing native endpoints for fetching countries, states, and cities.
+- **Interactive Dashboard**: Clean user dashboard to view user profile details and save optional location info (Age, Country, State, City, Pincode).
 
----
+### Security Architecture
 
-## System Requirements & Constraints
-
-To deploy or test this API locally, your system must meet the following prerequisites:
-
-- **Node.js**: v14.x or higher
-- **npm**: v6.x or higher
-- **MySQL**: v5.7 or v8.0+ installed and running locally
-- **Git** (optional, for cloning the repository)
-
-### Built-in Rate Limits
-To ensure stability and security, the API enforces the following limits:
-- **Authentication Endpoints (Login/Register)**: Maximum 5 requests per 15 minutes per IP address.
-- **General Endpoints**: Maximum 100 requests per 15 minutes per IP address.
+| Security Category | Rule / Implementation |
+|---|---|
+| **Token Handling** | JWTs signed with 15-minute expiration and delivered via `httpOnly`, `SameSite=Strict` secure cookies to mitigate XSS token theft. |
+| **Password Hashing** | Passwords hashed using Bcrypt with **cost factor 12** (`bcrypt.genSalt(12)`). |
+| **SQL Injection Prevention** | 100% parameterized queries using prepared statements (`db.execute(sql, params)`). |
+| **Account Enumeration Defense** | Failed authentication attempts consistently respond with generic `"Invalid email or password"` errors. |
+| **Rate Limiting & Lockout** | Auth endpoints restricted to **5 requests per 15-minute window** per IP. Tiered lockout timers trigger after consecutive failures. |
+| **HTTP Security Headers** | Helmet configuration enforcing **HSTS** (`max-age=31536000`), **X-Frame-Options: DENY** (Clickjacking prevention), and **X-Content-Type-Options: nosniff**. |
+| **Data Sanitization & Pollution** | Input sanitization using `xss-clean` and `hpp` parameter pollution prevention. |
 
 ---
 
-## Step-by-Step Setup Guide
+## Project Structure
 
-Follow these steps to get the API running on your local machine:
-
-### 1. Clone the Repository
-```bash
-git clone <your-github-repo-url>
-cd credguard
+```
+credguard/
+├── config/
+│   └── db.js                 # MySQL connection pool & automatic table initialization
+├── controllers/
+│   ├── authController.js     # Register, Login (with httpOnly cookie), Logout handlers
+│   ├── locationController.js # Country, State, City lookup handlers
+│   └── profileController.js  # GET & PUT user profile handlers
+├── middleware/
+│   ├── authMiddleware.js     # JWT protection middleware (supports cookie & Bearer token)
+│   ├── errorMiddleware.js    # Global operational error handler
+│   └── loginBruteForceLimiter.js # IP-based lockout & rate limiter
+├── public/                   # Frontend assets
+│   ├── index.html            # Sign-In & Sign-Up view (Glassmorphism theme)
+│   ├── welcome.html          # User Dashboard view
+│   ├── style.css             # Navy-blue glassmorphism styling
+│   ├── app.js                # Auth UI logic & dynamic location cascading dropdowns
+│   └── welcome.js            # Dashboard logic
+├── routes/
+│   ├── authRoutes.js         # Authentication routes (/api/auth)
+│   ├── locationRoutes.js     # Location lookup routes (/api)
+│   └── profileRoutes.js      # Profile management routes (/api/profile)
+├── database.sql              # MySQL database setup script
+├── api_tests.http            # HTTP request testing suite
+├── server.js                 # Express server & security middleware setup
+├── package.json              # Project dependencies
+└── README.md                 # Documentation
 ```
 
-### 2. Install Dependencies
-```bash
-npm install
-```
+---
 
-### 3. Database Configuration
-1. Open your MySQL command line or a GUI tool (like MySQL Workbench or phpMyAdmin).
-2. Create a new database and run the provided `database.sql` script to structure the `users` table:
-```bash
-mysql -u root -p < database.sql
-```
+## API Documentation
 
-### 4. Environment Variables
-Duplicate the `.env.example` file, rename it to `.env`, and fill in your local MySQL credentials:
-```bash
-cp .env.example .env
-```
-*Example `.env` configuration:*
+### 1. Authentication Endpoints (`/api/auth`)
+
+#### `POST /api/auth/register`
+- **Description**: Registers a new user.
+- **Rate Limit**: Max 5 requests per 15 minutes per IP.
+- **Request Body**:
+  ```json
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+14155552671",
+    "password": "StrongPassword123!",
+    "country": "United States",
+    "state": "California",
+    "city": "San Francisco",
+    "pincode": "94105"
+  }
+  ```
+
+#### `POST /api/auth/login`
+- **Description**: Authenticates user via email or phone. Sets `httpOnly` JWT cookie upon success.
+- **Rate Limit**: Max 5 requests per 15 minutes per IP + progressive lockout.
+- **Request Body**:
+  ```json
+  {
+    "identifier": "john@example.com",
+    "password": "StrongPassword123!"
+  }
+  ```
+
+#### `POST /api/auth/logout`
+- **Description**: Clears authentication cookies.
+
+---
+
+### 2. Location Endpoints (`/api`)
+
+- **`GET /api/countries`**: Returns all countries with ISO codes.
+- **`GET /api/states/:countryCode`**: Returns states for specified country (ISO2 code, e.g. `US`, `IN`).
+- **`GET /api/cities/:stateCode`**: Returns cities for specified state.
+
+---
+
+### 3. Profile Endpoints (`/api/profile`)
+
+- **`GET /api/profile`**: Returns protected profile data for the authenticated user.
+- **`PUT /api/profile`**: Updates optional profile details (`age`, `country`, `state`, `city`, `pincode`).
+
+---
+
+## Installation & Setup Guide
+
+### 1. Prerequisites
+- **Node.js**: v18.x or higher
+- **MySQL**: v8.0+ running locally or remotely
+
+### 2. Environment Configuration
+Create a `.env` file in the root directory:
 ```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=credguard_db
 PORT=5000
-JWT_SECRET=your_super_secret_jwt_key_123!
+NODE_ENV=development
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=credguard
+JWT_SECRET=your_super_secret_jwt_key
+JWT_EXPIRES_IN=15m
+FRONTEND_URL=http://localhost:5000
 ```
 
-### 5. Start the Server
-Launch the development server:
+### 3. Installation & Run
 ```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
+
+# Or start production server
+npm start
 ```
-*The server will start listening on `http://localhost:5000`.*
+Open `http://localhost:5000` in your web browser.
 
 ---
 
-## How to Test the API
-
-Since this is a backend service without a graphical user interface, you must use an API testing client like [Postman](https://www.postman.com/) or [Insomnia](https://insomnia.rest/). 
-
-Follow this workflow to test the endpoints:
-
-### Step 1: Register a New User
-- **Method**: `POST`
-- **URL**: `http://localhost:5000/api/auth/register`
-- **Body** (raw JSON):
-  ```json
-  {
-    "name": "Rahul Sharma",
-    "email": "rahul@example.com",
-    "password": "strongPassword123"
-  }
-  ```
-
-### Step 2: Log In to Get a Token
-- **Method**: `POST`
-- **URL**: `http://localhost:5000/api/auth/login`
-- **Body** (raw JSON):
-  ```json
-  {
-    "email": "rahul@example.com",
-    "password": "strongPassword123"
-  }
-  ```
-- **Response**: Upon success, you will receive a response containing a `token`. **Copy this token string.**
-
-### Step 3: Access a Protected Route (View Profile)
-- **Method**: `GET`
-- **URL**: `http://localhost:5000/api/profile`
-- **Headers**:
-  - Add a new key named `Authorization`.
-  - Set the value to `Bearer <paste_your_copied_token_here>` (ensure there is a space after "Bearer").
-- **Response**: The API will verify your token and securely return the user's profile data.
-
----
-
-## Contributing
-Contributions are welcome! Feel free to open issues or submit pull requests if you want to improve the CredGuard API.
+## License
+MIT License. Created for secure web application development.

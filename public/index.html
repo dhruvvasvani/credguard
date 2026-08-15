@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CredGuard - Secure Access</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,70 +14,96 @@
     </div>
 
     <div class="container" id="mainContainer">
-        <!-- Dashboard View (Hidden by default) -->
-        <div class="glass-card dashboard-card hidden" id="dashboardView">
-            <div class="header">
-                <h2>Welcome Back! 🚀</h2>
-                <button id="logoutBtn" class="btn-outline">Logout</button>
-            </div>
-            <div class="profile-info">
-                <div class="info-group">
-                    <label>Name</label>
-                    <p id="profileName">Loading...</p>
-                </div>
-                <div class="info-group">
-                    <label>Email</label>
-                    <p id="profileEmail">Loading...</p>
-                </div>
-                <div class="info-group">
-                    <label>User ID</label>
-                    <p id="profileId">Loading...</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Auth View -->
         <div class="glass-card auth-card" id="authView">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="width: 54px; height: 54px; background: linear-gradient(135deg, var(--primary), var(--nav-start)); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 6px 20px rgba(41, 121, 255, 0.35);">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93C9.33 17.79 7 14.5 7 11V7.18L12 5z"/></svg>
+                </div>
+                <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--nav-start); margin: 0;">CredGuard</h1>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Secure Authentication Portal</p>
+            </div>
+
             <div class="toggle-btns">
-                <button class="toggle-btn active" id="showLoginBtn">Login</button>
-                <button class="toggle-btn" id="showRegisterBtn">Sign Up</button>
+                <button class="toggle-btn active" id="showLoginBtn" type="button">Sign In</button>
+                <button class="toggle-btn" id="showRegisterBtn" type="button">Sign Up</button>
             </div>
 
             <!-- Login Form -->
-            <form id="loginForm" class="auth-form">
-                <h2>Sign In</h2>
+            <form id="loginForm" class="auth-form" autocomplete="on">
+                <h2 style="font-size: 1.3rem; margin-bottom: 5px;">Welcome Back</h2>
+                
                 <div class="input-group">
-                    <input type="email" id="loginEmail" required placeholder=" ">
-                    <label>Email Address</label>
+                    <input type="text" id="loginIdentifier" required placeholder=" " autocomplete="username">
+                    <label for="loginIdentifier">Email or Phone Number</label>
                 </div>
+
                 <div class="input-group">
-                    <input type="password" id="loginPassword" required placeholder=" ">
-                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder=" " autocomplete="current-password">
+                    <label for="loginPassword">Password</label>
                 </div>
+
                 <div class="error-msg" id="loginError"></div>
+
                 <button type="submit" class="btn-primary" id="loginSubmitBtn">
-                    <span class="btn-text">Log In</span>
+                    <span class="btn-text">Sign In</span>
                     <span class="loader hidden"></span>
                 </button>
             </form>
 
             <!-- Register Form (Hidden by default) -->
-            <form id="registerForm" class="auth-form hidden">
-                <h2>Create Account</h2>
+            <form id="registerForm" class="auth-form hidden" autocomplete="on">
+                <h2 style="font-size: 1.3rem; margin-bottom: 5px;">Create Account</h2>
+                
                 <div class="input-group">
-                    <input type="text" id="regName" required placeholder=" ">
-                    <label>Full Name</label>
+                    <input type="text" id="regName" required maxlength="50" placeholder=" " autocomplete="name">
+                    <label for="regName">Full Name</label>
+                    <small class="password-hint">Max 50 characters</small>
                 </div>
+
                 <div class="input-group">
-                    <input type="email" id="regEmail" required placeholder=" ">
-                    <label>Email Address</label>
+                    <input type="email" id="regEmail" required maxlength="100" placeholder=" " autocomplete="email">
+                    <label for="regEmail">Email Address</label>
+                    <small class="password-hint">Max 100 characters</small>
                 </div>
+
                 <div class="input-group">
-                    <input type="password" id="regPassword" required placeholder=" ">
-                    <label>Password</label>
-                    <small class="password-hint">Min 8 chars, 1 uppercase, 1 number.</small>
+                    <input type="tel" id="regPhone" required maxlength="15" placeholder=" " autocomplete="tel-national">
+                    <label for="regPhone">Phone Number (without country code)</label>
+                    <small class="password-hint">Enter your local phone number</small>
                 </div>
+
+                <div class="input-group">
+                    <select id="regCountry" required style="cursor: pointer;">
+                        <option value="" disabled selected>Select Country</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <select id="regState" required disabled style="cursor: pointer;">
+                        <option value="" disabled selected>Select State</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <select id="regCity" required disabled style="cursor: pointer;">
+                        <option value="" disabled selected>Select City</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="regPincode" required maxlength="10" placeholder=" " autocomplete="postal-code">
+                    <label for="regPincode">Pincode / Zipcode</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="regPassword" required placeholder=" " autocomplete="new-password">
+                    <label for="regPassword">Password</label>
+                    <small class="password-hint">Min 8 chars, 1 uppercase, 1 number, 1 special character.</small>
+                </div>
+
                 <div class="error-msg" id="regError"></div>
+
                 <button type="submit" class="btn-primary" id="regSubmitBtn">
                     <span class="btn-text">Sign Up</span>
                     <span class="loader hidden"></span>

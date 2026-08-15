@@ -15,15 +15,18 @@ const getUserProfile = async (req, res, next) => {
         }
 
         res.json({
-            id: req.user.id,
-            name: req.user.name,
-            email: req.user.email,
-            // phone_number: req.user.phone_number,
-            // address: req.user.address,
-            // age: req.user.age,
-            // gender: req.user.gender,
-            // gov_id: req.user.gov_id,
-            created_at: req.user.created_at
+            data: {
+                id: req.user.id,
+                name: req.user.name,
+                email: req.user.email,
+                phone: req.user.phone,
+                age: req.user.age,
+                country: req.user.country,
+                state: req.user.state,
+                city: req.user.city,
+                pincode: req.user.pincode,
+                created_at: req.user.created_at
+            }
         });
     } catch (error) {
         next(error);
@@ -31,7 +34,7 @@ const getUserProfile = async (req, res, next) => {
 };
 
 /**
- * @desc    Update user profile
+ * @desc    Update user profile (optional fields: age, country, state, city, pincode)
  * @route   PUT /api/profile
  * @access  Private
  */
@@ -43,37 +46,24 @@ const updateUserProfile = async (req, res, next) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { name, email /*, phone_number, address, age, gender, gov_id */ } = req.body;
+        const { age, country, state, city, pincode } = req.body;
         const userId = req.user.id;
 
-        // If updating email, check if it's already taken by someone else
-        if (email !== req.user.email) {
-            const [existing] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
-            if (existing.length > 0) {
-                res.status(400);
-                throw new Error('Email is already taken by another user');
-            }
-        }
-
-        // Update the user
+        // Update the optional profile fields
         await db.execute(
-            'UPDATE users SET name = ?, email = ? WHERE id = ?',
-            // To update extra fields, use the query below instead:
-            // 'UPDATE users SET name = ?, email = ?, phone_number = ?, address = ?, age = ?, gender = ?, gov_id = ? WHERE id = ?',
-            [name, email /*, phone_number, address, age, gender, gov_id */, userId]
+            'UPDATE users SET age = ?, country = ?, state = ?, city = ?, pincode = ? WHERE id = ?',
+            [age || null, country || null, state || null, city || null, pincode || null, userId]
         );
 
         // Fetch updated user to return
         const [updatedUsers] = await db.execute(
-            'SELECT id, name, email, created_at FROM users WHERE id = ?',
-            // To fetch extra fields, use the query below instead:
-            // 'SELECT id, name, email, phone_number, address, age, gender, gov_id, created_at FROM users WHERE id = ?',
+            'SELECT id, name, email, phone, age, country, state, city, pincode, created_at FROM users WHERE id = ?',
             [userId]
         );
 
         res.json({
             message: 'Profile updated successfully',
-            user: updatedUsers[0]
+            data: updatedUsers[0]
         });
 
     } catch (error) {

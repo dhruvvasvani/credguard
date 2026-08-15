@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CredGuard — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container" id="mainContainer" style="max-width: 520px;">
+        <!-- Dashboard View -->
+        <div class="glass-card dashboard-card" id="dashboardView">
+            <div class="header">
+                <h2>Welcome Back!</h2>
+                <button id="logoutBtn" class="btn-outline">Logout</button>
+            </div>
+            
+            <h3 id="welcomeName" style="text-align: center; margin-top: 10px; margin-bottom: 25px;">Loading...</h3>
+
+            <!-- Optional Profile Section -->
+            <div id="profileSection">
+                <h4 style="color: var(--text-muted); margin-bottom: 15px; font-weight: 400;">Complete Your Profile (Optional)</h4>
+                <form id="profileForm" class="auth-form" style="gap: 14px;">
+                    <div class="input-group">
+                        <input type="number" id="profileAge" min="1" max="120" placeholder=" ">
+                        <label>Age</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="profileCountry" maxlength="50" placeholder=" ">
+                        <label>Country</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="profileState" maxlength="50" placeholder=" ">
+                        <label>State</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="profileCity" maxlength="50" placeholder=" ">
+                        <label>City</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="profilePincode" maxlength="10" placeholder=" ">
+                        <label>Pincode</label>
+                    </div>
+                    <div class="error-msg" id="profileError"></div>
+                    <div class="success-msg" id="profileSuccess" style="color: #22c55e; font-size: 0.85rem; text-align: center; min-height: 20px;"></div>
+                    <button type="submit" class="btn-primary" id="profileSubmitBtn">
+                        <span class="btn-text">Save Profile</span>
+                        <span class="loader hidden"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="welcome.js"></script>
+</body>
+</html>

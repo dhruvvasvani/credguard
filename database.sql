@@ -2,16 +2,17 @@
 CREATE DATABASE IF NOT EXISTS credguard;
 USE credguard;
 
--- Users table
+-- Users table schema
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(18) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    -- phone_number VARCHAR(20),
-    -- address TEXT,
-    -- age INT,
-    -- gender VARCHAR(20),
-    -- gov_id VARCHAR(100),
+    age INT NULL,
+    country VARCHAR(50) NULL,
+    state VARCHAR(50) NULL,
+    city VARCHAR(50) NULL,
+    pincode VARCHAR(10) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
